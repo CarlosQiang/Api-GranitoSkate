@@ -24,7 +24,7 @@ import webhooksRoutes from "./routes/webhooks.js"
 
 // Importar configuración de base de datos
 import { testDatabaseConnections } from "./config/db.js"
-import { testShopifyConnection } from "./config/shopify.js"
+import { testShopifyConnection } from "./utils/shopify-helper.js"
 
 // Configuración
 dotenv.config()
@@ -35,11 +35,37 @@ const PORT = process.env.PORT || 3000
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+// Configuración de CORS
+const corsOptions = {
+  origin: [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    /\.myshopify\.com$/, // Permitir cualquier tienda de Shopify
+    process.env.SHOPIFY_SHOP_NAME,
+  ],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ["Content-Type", "Authorization", "X-API-Key", "X-Shopify-Hmac-Sha256"],
+}
+
 // Middlewares
 app.use(helmet()) // Seguridad
-app.use(cors()) // Permitir CORS
-app.use(express.json()) // Parsear JSON
-app.use(cookieParser()) // Parsear cookiesar cookies
+app.use(cors(corsOptions)) // Permitir CORS
+
+// IMPORTANTE: No usar express.json() para rutas de webhooks
+// porque necesitamos el cuerpo sin procesar para validar HMAC
+// En su lugar, lo aplicamos a todas las rutas excepto /api/webhooks
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/webhooks")) {
+    // No procesar el cuerpo para webhooks
+    next()
+  } else {
+    // Procesar el cuerpo como JSON para otras rutas
+    express.json()(req, res, next)
+  }
+})
+
+app.use(cookieParser()) // Parsear cookies
 
 // Rate limiting para prevenir abusos
 const limiter = rateLimit({
@@ -51,7 +77,7 @@ const limiter = rateLimit({
 app.use(limiter)
 
 // Servir archivos estáticos del panel de administración
-app.use('/admin', serveStatic(path.join(__dirname, '../admin')))
+app.use("/admin", serveStatic(path.join(__dirname, "../admin")))
 
 // Rutas
 app.use("/api/auth", authRoutes)
@@ -74,7 +100,7 @@ app.get("/", (req, res) => {
 
 // Ruta para el panel de administración
 app.get("/admin/*", (req, res) => {
-  res.sendFile(path.join(__dirname, '../admin/index.html'))
+  res.sendFile(path.join(__dirname, "../admin/index.html"))
 })
 
 // Manejo de errores global
@@ -110,6 +136,8 @@ const startServer = async () => {
     // Iniciar servidor
     app.listen(PORT, () => {
       console.log(`Servidor corriendo en el puerto ${PORT}`)
+      console.log(`Panel de administración: http://localhost:${PORT}/admin`)
+      console.log(`URL para webhooks: http://localhost:${PORT}/api/webhooks/[evento]`)
     })
   } catch (error) {
     console.error("Error al iniciar el servidor:", error)
