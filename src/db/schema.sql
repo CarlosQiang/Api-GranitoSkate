@@ -116,3 +116,18 @@ CREATE TABLE acciones_admin (
   detalles JSONB,
   fecha_accion TIMESTAMP DEFAULT NOW()
 );
+
+-- Tabla: administradores (nueva)
+CREATE TABLE admins (
+  id BIGSERIAL PRIMARY KEY,
+  email TEXT UNIQUE,
+  password TEXT,
+  nombre TEXT,
+  role TEXT DEFAULT 'admin', -- admin / superadmin
+  fecha_registro TIMESTAMP DEFAULT NOW(),
+  ultimo_login TIMESTAMP
+);
+
+-- Insertar un administrador por defecto (contraseña: admin123)
+INSERT INTO admins (email, password, nombre, role)
+VALUES ('admin@granitoskate.com', '$2a$10$XFAhzJSJz0TmgVxJqgVkWOW.UEZqRusLGkXBt1Fz.4mBi.MN7jK6W', 'Administrador', 'superadmin');
