@@ -54,7 +54,6 @@ app.use(cors(corsOptions)) // Permitir CORS
 
 // IMPORTANTE: No usar express.json() para rutas de webhooks
 // porque necesitamos el cuerpo sin procesar para validar HMAC
-// En su lugar, lo aplicamos a todas las rutas excepto /api/webhooks
 app.use((req, res, next) => {
   if (req.path.startsWith("/api/webhooks")) {
     // No procesar el cuerpo para webhooks

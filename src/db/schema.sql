@@ -1,7 +1,7 @@
 -- Base de datos 1: tienda_skate_tema (Contenido del tema)
 
 -- Tabla: reseñas públicas
-CREATE TABLE resenas (
+CREATE TABLE IF NOT EXISTS resenas (
   id BIGSERIAL PRIMARY KEY,
   nombre_cliente TEXT,
   id_producto TEXT,
@@ -11,7 +11,7 @@ CREATE TABLE resenas (
 );
 
 -- Tabla: eventos de la tienda
-CREATE TABLE eventos (
+CREATE TABLE IF NOT EXISTS eventos (
   id BIGSERIAL PRIMARY KEY,
   titulo TEXT,
   descripcion TEXT,
@@ -20,7 +20,7 @@ CREATE TABLE eventos (
 );
 
 -- Tabla: banners (por si haces un slider en el home)
-CREATE TABLE banners (
+CREATE TABLE IF NOT EXISTS banners (
   id BIGSERIAL PRIMARY KEY,
   titulo TEXT,
   subtitulo TEXT,
@@ -30,14 +30,14 @@ CREATE TABLE banners (
 );
 
 -- Tabla: preguntas frecuentes
-CREATE TABLE faq (
+CREATE TABLE IF NOT EXISTS faq (
   id BIGSERIAL PRIMARY KEY,
   pregunta TEXT,
   respuesta TEXT
 );
 
 -- Tabla: bloques de contenido en el home (por ejemplo, combos)
-CREATE TABLE home_blocks (
+CREATE TABLE IF NOT EXISTS home_blocks (
   id BIGSERIAL PRIMARY KEY,
   titulo TEXT,
   descripcion TEXT,
@@ -49,16 +49,17 @@ CREATE TABLE home_blocks (
 -- Base de datos 2: tienda_skate_app (Interacción de usuarios)
 
 -- Tabla: usuarios (identificados por Shopify)
-CREATE TABLE usuarios (
+CREATE TABLE IF NOT EXISTS usuarios (
   id BIGSERIAL PRIMARY KEY,
   shopify_customer_id TEXT UNIQUE,
   email TEXT,
   nombre TEXT,
+  activo BOOLEAN DEFAULT TRUE,
   fecha_registro TIMESTAMP DEFAULT NOW()
 );
 
 -- Tabla: productos guardados como favoritos
-CREATE TABLE favoritos (
+CREATE TABLE IF NOT EXISTS favoritos (
   id BIGSERIAL PRIMARY KEY,
   usuario_id BIGINT REFERENCES usuarios(id),
   id_producto TEXT,
@@ -67,7 +68,7 @@ CREATE TABLE favoritos (
 );
 
 -- Tabla: builder de Skate personalizado
-CREATE TABLE build_skates (
+CREATE TABLE IF NOT EXISTS build_skates (
   id BIGSERIAL PRIMARY KEY,
   usuario_id BIGINT REFERENCES usuarios(id),
   nombre_build TEXT,
@@ -80,7 +81,7 @@ CREATE TABLE build_skates (
 );
 
 -- Tabla: mensajes enviados por los clientes
-CREATE TABLE mensajes (
+CREATE TABLE IF NOT EXISTS mensajes (
   id BIGSERIAL PRIMARY KEY,
   usuario_id BIGINT REFERENCES usuarios(id),
   asunto TEXT,
@@ -91,7 +92,7 @@ CREATE TABLE mensajes (
 );
 
 -- Tabla: encuestas post-compra
-CREATE TABLE encuestas (
+CREATE TABLE IF NOT EXISTS encuestas (
   id BIGSERIAL PRIMARY KEY,
   usuario_id BIGINT REFERENCES usuarios(id),
   id_pedido TEXT,
@@ -101,7 +102,7 @@ CREATE TABLE encuestas (
 );
 
 -- Tabla: visitas a productos
-CREATE TABLE visitas (
+CREATE TABLE IF NOT EXISTS visitas (
   id BIGSERIAL PRIMARY KEY,
   usuario_id BIGINT REFERENCES usuarios(id),
   id_producto TEXT,
@@ -109,7 +110,7 @@ CREATE TABLE visitas (
 );
 
 -- Tabla: log de acciones de admin (ver mensajes, responder, etc.)
-CREATE TABLE acciones_admin (
+CREATE TABLE IF NOT EXISTS acciones_admin (
   id BIGSERIAL PRIMARY KEY,
   admin_nombre TEXT,
   tipo_accion TEXT,
@@ -117,8 +118,8 @@ CREATE TABLE acciones_admin (
   fecha_accion TIMESTAMP DEFAULT NOW()
 );
 
--- Tabla: administradores (nueva)
-CREATE TABLE admins (
+-- Tabla: administradores
+CREATE TABLE IF NOT EXISTS admins (
   id BIGSERIAL PRIMARY KEY,
   email TEXT UNIQUE,
   password TEXT,
@@ -130,4 +131,5 @@ CREATE TABLE admins (
 
 -- Insertar un administrador por defecto (contraseña: admin123)
 INSERT INTO admins (email, password, nombre, role)
-VALUES ('admin@granitoskate.com', '$2a$10$XFAhzJSJz0TmgVxJqgVkWOW.UEZqRusLGkXBt1Fz.4mBi.MN7jK6W', 'Administrador', 'superadmin');
+VALUES ('admin@granitoskate.com', '$2a$10$XFAhzJSJz0TmgVxJqgVkWOW.UEZqRusLGkXBt1Fz.4mBi.MN7jK6W', 'Administrador', 'superadmin')
+ON CONFLICT (email) DO NOTHING;

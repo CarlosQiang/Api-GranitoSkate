@@ -1,6 +1,4 @@
-// Funciones para manejar respuestas de la API de manera consistente
-
-// Respuesta exitosa
+// Función para manejar respuestas exitosas
 export const successResponse = (res, data = null, message = "Operación exitosa", statusCode = 200) => {
   return res.status(statusCode).json({
     success: true,
@@ -9,7 +7,7 @@ export const successResponse = (res, data = null, message = "Operación exitosa"
   })
 }
 
-// Respuesta de error
+// Función para manejar errores
 export const errorResponse = (res, message = "Error en la operación", statusCode = 400, error = null) => {
   const response = {
     success: false,
@@ -17,29 +15,29 @@ export const errorResponse = (res, message = "Error en la operación", statusCod
   }
 
   // Solo incluir detalles del error en desarrollo
-  if (process.env.NODE_ENV === "development" && error) {
-    response.error = error.message || error
+  if (error && process.env.NODE_ENV === "development") {
+    response.error = error.toString()
   }
 
   return res.status(statusCode).json(response)
 }
 
-// Respuesta para recursos no encontrados
+// Función para manejar respuestas de recursos no encontrados
 export const notFoundResponse = (res, message = "Recurso no encontrado") => {
   return errorResponse(res, message, 404)
 }
 
-// Respuesta para errores de validación
+// Función para manejar respuestas de errores de validación
 export const validationErrorResponse = (res, errors) => {
   return errorResponse(res, "Error de validación", 422, errors)
 }
 
-// Respuesta para errores de autenticación
+// Función para manejar respuestas de errores de autenticación
 export const unauthorizedResponse = (res, message = "No autorizado") => {
   return errorResponse(res, message, 401)
 }
 
-// Respuesta para errores de permisos
+// Función para manejar respuestas de errores de permisos
 export const forbiddenResponse = (res, message = "Acceso denegado") => {
   return errorResponse(res, message, 403)
 }

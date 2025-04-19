@@ -121,3 +121,93 @@ export const formatShopifyProduct = (product) => {
     })),
   }
 }
+
+// Formatear datos de cliente de Shopify
+export const formatShopifyCustomer = (customer) => {
+  return {
+    id: customer.id,
+    email: customer.email,
+    first_name: customer.first_name,
+    last_name: customer.last_name,
+    phone: customer.phone,
+    created_at: customer.created_at,
+    updated_at: customer.updated_at,
+    orders_count: customer.orders_count,
+    total_spent: customer.total_spent,
+    tags: customer.tags,
+    addresses: customer.addresses
+      ? customer.addresses.map((address) => ({
+          id: address.id,
+          address1: address.address1,
+          address2: address.address2,
+          city: address.city,
+          province: address.province,
+          country: address.country,
+          zip: address.zip,
+          phone: address.phone,
+          default: address.default,
+        }))
+      : [],
+  }
+}
+
+// Formatear datos de pedido de Shopify
+export const formatShopifyOrder = (order) => {
+  return {
+    id: order.id,
+    order_number: order.order_number,
+    email: order.email,
+    created_at: order.created_at,
+    updated_at: order.updated_at,
+    processed_at: order.processed_at,
+    customer: order.customer
+      ? {
+          id: order.customer.id,
+          email: order.customer.email,
+          name: `${order.customer.first_name} ${order.customer.last_name}`.trim(),
+        }
+      : null,
+    shipping_address: order.shipping_address
+      ? {
+          name: order.shipping_address.name,
+          address1: order.shipping_address.address1,
+          address2: order.shipping_address.address2,
+          city: order.shipping_address.city,
+          province: order.shipping_address.province,
+          country: order.shipping_address.country,
+          zip: order.shipping_address.zip,
+          phone: order.shipping_address.phone,
+        }
+      : null,
+    billing_address: order.billing_address
+      ? {
+          name: order.billing_address.name,
+          address1: order.billing_address.address1,
+          address2: order.billing_address.address2,
+          city: order.billing_address.city,
+          province: order.billing_address.province,
+          country: order.billing_address.country,
+          zip: order.billing_address.zip,
+          phone: order.billing_address.phone,
+        }
+      : null,
+    currency: order.currency,
+    total_price: order.total_price,
+    subtotal_price: order.subtotal_price,
+    total_tax: order.total_tax,
+    total_discounts: order.total_discounts,
+    total_shipping: order.total_shipping_price_set?.shop_money?.amount || "0.00",
+    financial_status: order.financial_status,
+    fulfillment_status: order.fulfillment_status,
+    line_items: order.line_items.map((item) => ({
+      id: item.id,
+      title: item.title,
+      variant_title: item.variant_title,
+      quantity: item.quantity,
+      price: item.price,
+      sku: item.sku,
+      product_id: item.product_id,
+      variant_id: item.variant_id,
+    })),
+  }
+}

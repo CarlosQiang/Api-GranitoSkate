@@ -1,13 +1,3 @@
-// Importar configuración (simulando, ya que no tenemos el archivo CONFIG)
-const CONFIG = {
-  storageKey: "adminConfig",
-  defaults: {
-    apiUrl: "http://localhost:3000",
-    apiKey: "defaultApiKey",
-    adminName: "Admin",
-  },
-}
-
 // API Client para comunicarse con el backend
 class ApiClient {
   constructor() {
@@ -16,16 +6,16 @@ class ApiClient {
 
   // Cargar configuración
   loadConfig() {
-    const storedConfig = localStorage.getItem(CONFIG.storageKey)
+    const storedConfig = localStorage.getItem("adminConfig")
     if (storedConfig) {
       const config = JSON.parse(storedConfig)
-      this.apiUrl = config.apiUrl || CONFIG.defaults.apiUrl
+      this.apiUrl = config.apiUrl || window.location.origin
       this.token = config.token || null
-      this.adminName = config.adminName || CONFIG.defaults.adminName
+      this.adminName = config.adminName || "Admin"
     } else {
-      this.apiUrl = CONFIG.defaults.apiUrl
+      this.apiUrl = window.location.origin
       this.token = null
-      this.adminName = CONFIG.defaults.adminName
+      this.adminName = "Admin"
     }
   }
 
@@ -36,7 +26,7 @@ class ApiClient {
     this.adminName = adminName
 
     localStorage.setItem(
-      CONFIG.storageKey,
+      "adminConfig",
       JSON.stringify({
         apiUrl,
         token,
@@ -91,18 +81,18 @@ class ApiClient {
 
   // Métodos de autenticación
   async login(email, password) {
-    return this.request("/auth/login", {
+    return this.request("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     })
   }
 
   async verifyToken() {
-    return this.request("/auth/verify")
+    return this.request("/api/auth/verify")
   }
 
   async changePassword(currentPassword, newPassword) {
-    return this.request("/auth/change-password", {
+    return this.request("/api/auth/change-password", {
       method: "POST",
       body: JSON.stringify({ currentPassword, newPassword }),
     })
@@ -112,130 +102,101 @@ class ApiClient {
 
   // Estadísticas
   async getStats() {
-    return this.request("/admin/stats")
+    return this.request("/api/admin/stats")
   }
 
   // Usuarios
   async getUsuarios() {
-    return this.request("/usuarios")
+    return this.request("/api/usuarios")
   }
 
   async getUsuarioById(id) {
-    return this.request(`/usuarios/${id}`)
+    return this.request(`/api/usuarios/${id}`)
   }
 
   // Favoritos
   async getFavoritos() {
-    return this.request("/favoritos")
+    return this.request("/api/favoritos")
   }
 
   async deleteFavorito(id) {
-    return this.request(`/favoritos/${id}`, { method: "DELETE" })
+    return this.request(`/api/favoritos/${id}`, { method: "DELETE" })
   }
 
   // Builds
   async getBuilds() {
-    return this.request("/builds")
+    return this.request("/api/builds")
   }
 
   async getBuildById(id) {
-    return this.request(`/builds/${id}`)
+    return this.request(`/api/builds/${id}`)
   }
 
   async deleteBuild(id) {
-    return this.request(`/builds/${id}`, { method: "DELETE" })
+    return this.request(`/api/builds/${id}`, { method: "DELETE" })
   }
 
   // Mensajes
   async getMensajes(estado = null) {
     const query = estado ? `?estado=${estado}` : ""
-    return this.request(`/mensajes${query}`)
+    return this.request(`/api/mensajes${query}`)
   }
 
   async updateMensaje(id, data) {
-    return this.request(`/mensajes/${id}`, {
+    return this.request(`/api/mensajes/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   }
 
   async deleteMensaje(id) {
-    return this.request(`/mensajes/${id}`, { method: "DELETE" })
+    return this.request(`/api/mensajes/${id}`, { method: "DELETE" })
   }
 
   // Encuestas
   async getEncuestas() {
-    return this.request("/encuestas")
+    return this.request("/api/encuestas")
   }
 
   async deleteEncuesta(id) {
-    return this.request(`/encuestas/${id}`, { method: "DELETE" })
+    return this.request(`/api/encuestas/${id}`, { method: "DELETE" })
   }
 
   // Eventos
   async getEventos() {
-    return this.request("/eventos")
+    return this.request("/api/eventos")
   }
 
   async createEvento(data) {
-    return this.request("/eventos", {
+    return this.request("/api/eventos", {
       method: "POST",
       body: JSON.stringify(data),
     })
   }
 
   async deleteEvento(id) {
-    return this.request(`/eventos/${id}`, { method: "DELETE" })
+    return this.request(`/api/eventos/${id}`, { method: "DELETE" })
   }
 
   // Reseñas
   async getResenas() {
-    return this.request("/resenas")
+    return this.request("/api/resenas")
   }
 
   async updateResena(id, data) {
-    return this.request(`/resenas/${id}`, {
+    return this.request(`/api/resenas/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     })
   }
 
   async deleteResena(id) {
-    return this.request(`/resenas/${id}`, { method: "DELETE" })
+    return this.request(`/api/resenas/${id}`, { method: "DELETE" })
   }
 
   // Visitas
   async getVisitasByProducto(productoId) {
-    return this.request(`/visitas/${productoId}`)
-  }
-
-  // Shopify
-  async getShopifyProducts(limit = 50, page = 1) {
-    return this.request(`/shopify/products?limit=${limit}&page=${page}`)
-  }
-
-  async getShopifyOrders(limit = 50, status = 'any') {
-    return this.request(`/shopify/orders?limit=${limit}&status=${status}`)
-  }
-
-  async getShopifyCustomers(limit = 50) {
-    return this.request(`/shopify/customers?limit=${limit}`)
-  }
-
-  async getShopDetails() {
-    return this.request('/shopify/shop')
-  }
-
-  async syncCustomer(customerId) {
-    return this.request(`/shopify/sync-customer/${customerId}`, {
-      method: "POST"
-    })
-  }
-
-  async setupWebhooks() {
-    return this.request('/shopify/setup-webhooks', {
-      method: "POST"
-    })
+    return this.request(`/api/visitas/${productoId}`)
   }
 
   // Probar conexión

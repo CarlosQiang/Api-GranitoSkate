@@ -1,10 +1,11 @@
-// Funciones de autenticación para el panel de administración
-import { CONFIG, showLoginModal } from "./config.js"
+// Importar la instancia de la API (asegúrate de que la ruta sea correcta)
 import { api } from "./api.js"
 
+// Funciones de autenticación para el panel de administración
+
 // Verificar sesión
-export function checkSession() {
-  const storedConfig = localStorage.getItem(CONFIG.storageKey)
+function checkSession() {
+  const storedConfig = localStorage.getItem("adminConfig")
   if (!storedConfig) {
     showLoginModal()
     return false
@@ -48,8 +49,8 @@ export function checkSession() {
 }
 
 // Guardar datos de sesión
-export function saveSession(adminName, token, remember = false) {
-  const storedConfig = localStorage.getItem(CONFIG.storageKey)
+function saveSession(adminName, token, remember = false) {
+  const storedConfig = localStorage.getItem("adminConfig")
   const config = storedConfig ? JSON.parse(storedConfig) : {}
 
   config.adminName = adminName
@@ -64,12 +65,12 @@ export function saveSession(adminName, token, remember = false) {
     config.sessionExpires = null
   }
 
-  localStorage.setItem(CONFIG.storageKey, JSON.stringify(config))
+  localStorage.setItem("adminConfig", JSON.stringify(config))
 }
 
 // Cerrar sesión
-export function logout() {
-  const storedConfig = localStorage.getItem(CONFIG.storageKey)
+function logout() {
+  const storedConfig = localStorage.getItem("adminConfig")
   if (storedConfig) {
     const config = JSON.parse(storedConfig)
     // Mantener la configuración de la API pero eliminar datos de sesión
@@ -77,25 +78,19 @@ export function logout() {
     delete config.adminName
     delete config.lastLogin
     delete config.sessionExpires
-    localStorage.setItem(CONFIG.storageKey, JSON.stringify(config))
+    localStorage.setItem("adminConfig", JSON.stringify(config))
   }
 
   showLoginModal()
 }
 
-// Limpiar caché
-export function clearCache() {
-  // Eliminar todos los elementos de caché
-  const cacheKeys = [
-    "stats_cache",
-    "mensajes_cache",
-    "eventos_cache",
-    "usuarios_cache",
-    "favoritos_cache",
-    "builds_cache",
-    "encuestas_cache",
-    "resenas_cache",
-  ]
-
-  cacheKeys.forEach((key) => localStorage.removeItem(key))
+// Mostrar modal de login
+function showLoginModal() {
+  const loginModalElement = document.getElementById("loginModal")
+  if (loginModalElement) {
+    const loginModal = new bootstrap.Modal(loginModalElement)
+    loginModal.show()
+  } else {
+    console.error("El elemento con ID 'loginModal' no se encontró en el DOM.")
+  }
 }

@@ -1,7 +1,7 @@
 // Funciones de utilidad para el panel de administración
 
 // Formatear fecha
-export function formatDate(dateString) {
+function formatDate(dateString) {
   if (!dateString) return "-"
 
   const date = new Date(dateString)
@@ -15,7 +15,7 @@ export function formatDate(dateString) {
 }
 
 // Truncar texto
-export function truncateText(text, maxLength) {
+function truncateText(text, maxLength) {
   if (!text) return "-"
 
   if (text.length <= maxLength) return text
@@ -24,7 +24,7 @@ export function truncateText(text, maxLength) {
 }
 
 // Formatear valoración (estrellas)
-export function formatRating(rating) {
+function formatRating(rating) {
   if (!rating) return "-"
 
   let stars = ""
@@ -38,59 +38,70 @@ export function formatRating(rating) {
   return stars
 }
 
-// Validar email
-export function validateEmail(email) {
-  const re =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-  return re.test(String(email).toLowerCase())
-}
+// Mostrar notificación
+function showNotification(message, type = "success") {
+  const toastContainer = document.querySelector(".toast-container")
 
-// Validar URL
-export function validateUrl(url) {
-  try {
-    new URL(url)
-    return true
-  } catch (e) {
-    return false
+  if (!toastContainer) {
+    const container = document.createElement("div")
+    container.className = "toast-container"
+    document.body.appendChild(container)
   }
+
+  const toast = document.createElement("div")
+  toast.className = `toast bg-${type} text-white`
+  toast.setAttribute("role", "alert")
+  toast.setAttribute("aria-live", "assertive")
+  toast.setAttribute("aria-atomic", "true")
+
+  toast.innerHTML = `
+    <div class="toast-header bg-${type} text-white">
+      <strong class="me-auto">GranitoSkate Admin</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      ${message}
+    </div>
+  `
+
+  document.querySelector(".toast-container").appendChild(toast)
+
+  const bsToast = new bootstrap.Toast(toast, {
+    autohide: true,
+    delay: 3000,
+  })
+
+  bsToast.show()
+
+  // Eliminar el toast después de ocultarse
+  toast.addEventListener("hidden.bs.toast", () => {
+    toast.remove()
+  })
 }
 
-// Generar ID único
-export function generateUniqueId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5)
-}
+// Mostrar modal de confirmación
+function showConfirmModal(message, callback) {
+  const confirmModal = document.getElementById("confirmModal")
+  const confirmMessage = document.getElementById("confirm-message")
+  const confirmActionBtn = document.getElementById("confirm-action-btn")
 
-// Formatear precio
-export function formatPrice(price, currency = "EUR") {
-  if (!price) return "-"
+  // Actualizar mensaje
+  confirmMessage.textContent = message
 
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: currency,
-  }).format(price)
-}
+  // Actualizar acción del botón
+  const oldConfirmAction = confirmActionBtn.onclick
+  confirmActionBtn.onclick = () => {
+    callback()
+    const modal = bootstrap.Modal.getInstance(confirmModal)
+    modal.hide()
 
-// Obtener diferencia de tiempo en formato legible
-export function getTimeAgo(dateString) {
-  if (!dateString) return "-"
-
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now - date
-  const diffSec = Math.round(diffMs / 1000)
-  const diffMin = Math.round(diffSec / 60)
-  const diffHour = Math.round(diffMin / 60)
-  const diffDay = Math.round(diffHour / 24)
-
-  if (diffSec < 60) {
-    return `Hace ${diffSec} segundos`
-  } else if (diffMin < 60) {
-    return `Hace ${diffMin} minutos`
-  } else if (diffHour < 24) {
-    return `Hace ${diffHour} horas`
-  } else if (diffDay < 30) {
-    return `Hace ${diffDay} días`
-  } else {
-    return formatDate(dateString)
+    // Restaurar acción anterior
+    setTimeout(() => {
+      confirmActionBtn.onclick = oldConfirmAction
+    }, 100)
   }
+
+  // Mostrar modal
+  const modal = new bootstrap.Modal(confirmModal)
+  modal.show()
 }

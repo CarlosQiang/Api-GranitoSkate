@@ -1,23 +1,33 @@
-# API para Tienda de Skateboarding
+# GranitoSkate API v6
 
 API REST desarrollada con Node.js y Express para una tienda online de skateboarding integrada con Shopify.
+
+## Características
+
+- Autenticación JWT para el panel de administración
+- Integración con Shopify API
+- Webhooks para sincronización automática
+- Panel de administración
+- Base de datos PostgreSQL (Neon.tech)
+- Despliegue en Vercel
 
 ## Estructura del Proyecto
 
 \`\`\`
 /
-├── src/
-│   ├── config/         # Configuraciones (base de datos, variables de entorno)
-│   ├── controllers/    # Lógica de negocio
-│   ├── db/             # Conexiones a las bases de datos
-│   ├── middlewares/    # Middleware para autenticación, validación, etc.
-│   ├── routes/         # Rutas de la API organizadas por recurso
-│   ├── utils/          # Funciones de utilidad
-│   └── index.js        # Punto de entrada de la aplicación
-├── .env                # Variables de entorno (no incluido en el repositorio)
-├── .env.example        # Ejemplo de variables de entorno
-├── vercel.json         # Configuración para despliegue en Vercel
-└── package.json        # Dependencias y scripts
+├── admin/             # Panel de administración
+├── src/               # Código fuente de la API
+│   ├── config/        # Configuraciones (DB, etc.)
+│   ├── controllers/   # Controladores
+│   ├── db/            # Esquemas y migraciones
+│   ├── middlewares/   # Middlewares
+│   ├── routes/        # Rutas
+│   ├── utils/         # Utilidades
+│   └── index.js       # Punto de entrada
+├── .env               # Variables de entorno (no incluido en el repositorio)
+├── .env.example       # Ejemplo de variables de entorno
+├── package.json       # Dependencias y scripts
+└── vercel.json        # Configuración para Vercel
 \`\`\`
 
 ## Requisitos
@@ -25,13 +35,14 @@ API REST desarrollada con Node.js y Express para una tienda online de skateboard
 - Node.js 14.x o superior
 - PostgreSQL (local para desarrollo o Neon.tech para producción)
 - Cuenta en Vercel para despliegue
+- Cuenta en Shopify Partners
 
 ## Instalación
 
 1. Clona este repositorio:
    \`\`\`bash
-   git clone https://github.com/tu-usuario/tienda-skate-api.git
-   cd tienda-skate-api
+   git clone https://github.com/tu-usuario/granito-skate-api.git
+   cd granito-skate-api
    \`\`\`
 
 2. Instala las dependencias:
@@ -46,14 +57,65 @@ API REST desarrollada con Node.js y Express para una tienda online de skateboard
    npm run dev
    \`\`\`
 
-## Bases de Datos
+## Configuración de Bases de Datos
 
-El proyecto utiliza dos bases de datos PostgreSQL:
+1. Crea dos bases de datos en Neon.tech:
+   - `tienda_skate_tema`: Para contenido público (eventos, reseñas, etc.)
+   - `tienda_skate_app`: Para datos de usuarios (favoritos, builds, etc.)
 
-1. **tienda_skate_tema**: Contiene datos públicos del tema (eventos, reseñas, etc.)
-2. **tienda_skate_app**: Contiene datos de interacción de usuarios (favoritos, builds, etc.)
+2. Ejecuta el script SQL en `src/db/schema.sql` en ambas bases de datos.
+
+## Configuración de Shopify
+
+1. Crea una app privada en Shopify Partners.
+2. Configura los webhooks en Shopify:
+   - `customers/create`: `https://tu-api.vercel.app/api/webhooks/customers/create`
+   - `customers/update`: `https://tu-api.vercel.app/api/webhooks/customers/update`
+   - `customers/delete`: `https://tu-api.vercel.app/api/webhooks/customers/delete`
+   - `orders/create`: `https://tu-api.vercel.app/api/webhooks/orders/create`
+   - `products/update`: `https://tu-api.vercel.app/api/webhooks/products/update`
+
+## Despliegue en Vercel
+
+1. Instala la CLI de Vercel:
+   \`\`\`bash
+   npm i -g vercel
+   \`\`\`
+
+2. Despliega el proyecto:
+   \`\`\`bash
+   vercel
+   \`\`\`
+
+3. Para producción:
+   \`\`\`bash
+   vercel --prod
+   \`\`\`
+
+## Acceso al Panel de Administración
+
+- URL: `http://localhost:3000/admin` (desarrollo) o `https://tu-api.vercel.app/admin` (producción)
+- Credenciales por defecto:
+  - Email: `admin@granitoskate.com`
+  - Contraseña: `admin123`
+
+**¡Importante!** Cambia la contraseña por defecto después del primer inicio de sesión.
 
 ## Endpoints de la API
+
+### Autenticación
+- `POST /api/auth/login` - Iniciar sesión
+- `POST /api/auth/register` - Registrar nuevo administrador
+- `GET /api/auth/verify` - Verificar token
+- `POST /api/auth/refresh` - Refrescar token
+- `POST /api/auth/change-password` - Cambiar contraseña
+
+### Webhooks
+- `POST /api/webhooks/customers/create` - Webhook para creación de cliente
+- `POST /api/webhooks/customers/update` - Webhook para actualización de cliente
+- `POST /api/webhooks/customers/delete` - Webhook para eliminación de cliente
+- `POST /api/webhooks/orders/create` - Webhook para creación de pedido
+- `POST /api/webhooks/products/update` - Webhook para actualización de producto
 
 ### Usuarios
 - `GET /api/usuarios/:id` - Obtener usuario por ID
@@ -64,7 +126,7 @@ El proyecto utiliza dos bases de datos PostgreSQL:
 - `POST /api/favoritos` - Agregar favorito
 - `DELETE /api/favoritos/:id` - Eliminar favorito
 
-### Builds de Skate
+### Builds
 - `GET /api/builds/:usuario_id` - Obtener builds de un usuario
 - `POST /api/builds` - Crear nuevo build
 - `DELETE /api/builds/:id` - Eliminar build
@@ -99,24 +161,9 @@ El proyecto utiliza dos bases de datos PostgreSQL:
 - `GET /api/admin/stats` - Obtener estadísticas generales
 - `GET /api/admin/log` - Obtener log de acciones de administrador
 
-## Seguridad
+## Licencia
 
-Las rutas de administrador están protegidas mediante un token de API que debe enviarse en el encabezado `x-api-key`.
+MIT
+\`\`\`
 
-## Despliegue
-
-Para desplegar en Vercel:
-
-1. Instala la CLI de Vercel:
-   \`\`\`bash
-   npm i -g vercel
-   \`\`\`
-
-2. Despliega el proyecto:
-   \`\`\`bash
-   vercel
-   \`\`\`
-
-3. Para producción:
-   \`\`\`bash
-   vercel --prod
+Ahora, vamos a crear un archivo .gitignore básico:
